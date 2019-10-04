@@ -1,0 +1,43 @@
+¤¤ base ¤¤
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" href="./template.css" />
+    <link rel="stylesheet" type="text/css" href="./style.css" />
+    <script type="text/javascript" src="./script.js"></script>
+    <title>¤title¤</title>
+  </head>
+  <body>
+    <h1>Ladda upp en fil</h1>
+    ¤content¤
+  </body>
+</html>
+
+¤¤ form ¤¤
+<form name="upload"
+      action="."
+      enctype="multipart/form-data">
+  <input type="hidden" name="id" value="¤id¤" />
+  <input id="uploadfile"
+         name="uploadfile"
+         type="file"
+         onchange="show_file(event)"/>
+  <input id="filename"
+         class="inline"
+         name="filename"
+         type="text"
+         placeholder="Välj en fil..."
+         onclick="select_file(event)"
+         readonly />
+  <button onclick="upload_progress(event)">
+    Ladda upp
+  </button>
+</form>
+
+¤¤ error ¤¤
+<span class="error">
+  ¤message¤
+</span>

@@ -8,11 +8,7 @@ require('./include/functions.php');
 
 header('Content-Type: text/html; charset=UTF-8');
 
-$base = get_fragments('./include/base.html');
-
-print(replace(array(
-    'title' => 'DSV:s uppladdningstjänst'
-), $base['head']));
-print($base['foot']);
+$page = new AdminPage();
+$page->render();
 
 ?>

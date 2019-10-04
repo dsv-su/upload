@@ -1,0 +1,68 @@
+¤¤ base ¤¤
+<h1>Administrera uppladdningslänkar</h1>
+<div id="create">
+  <h2>Skapa ny länk</h2>
+  <form>
+    <label for="name">
+      Beskrivning
+    </label>
+    <input name="name"
+           type="text"
+           placeholder="Något om vad länken är till för..." />
+    <button>
+      Skapa
+    </button>
+  </form>
+</div>
+
+¤¤ completed ¤¤
+<div id="completed">
+  <h2>Färdiga uppladdningar</h2>
+  <ul>
+    ¤items¤
+  </ul>
+</div>
+
+¤¤ pending ¤¤
+<div id="pending">
+  <h2>Skapade länkar</h2>
+  <ul>
+    ¤items¤
+  </ul>
+</div>
+
+¤¤ pruned ¤¤
+<div id="pruned">
+  <h2>Utgångna länkar</h2>
+  Länkar äldre än 6 månader tas bort helt och visas inte här.
+  <ul>
+    ¤items¤
+  </ul>
+</div>
+
+¤¤ dl_item ¤¤
+<li>
+  <span class="label">¤name¤</span>
+  <br/>
+  <a href="¤link¤">Ladda ner</a>
+</li>
+
+¤¤ ul_item ¤¤
+<li>
+  <span class="label">¤name¤</span>
+  <br/>
+  <a href="¤link¤"
+     class="ul_link">
+    ¤link¤
+  </a>
+</li>
+
+¤¤ old_link_item ¤¤
+<li>
+  <span class="label">¤name¤</span>
+  <br/>
+  <span class="old_link">
+    ¤link¤
+  </span>
+</li>
+
