@@ -3,11 +3,13 @@ class Item {
     private $id = '';
     private $description;
     private $state;
+    private $create_time;
     
-    public function __construct($id, $description, $state) {
-        $this->id = $id;
-        $this->description = $description;
-        $this->state = $state;
+    public function __construct($db_row) {
+        $this->id = $db_row['uuid'];
+        $this->description = $db_row['description'];
+        $this->state = $db_row['state'];
+        $this->create_time = $db_row['create_time'];
     }
 
     public function get_id() {
@@ -22,14 +24,18 @@ class Item {
         return $this->state;
     }
 
+    public function get_ttl() {
+        return 5;
+    }
+    
     public function get_url() {
-        $urlbase = preg_replace('/\/(index.php)?$/', '', $_SERVER['SCRIPT_URI']);
+        global $base_url;
         switch($this->state) {
             case 'pending':
             case 'pruned':
-                return $urlbase.'/link/?ul='.$this->id;
+                return $base_url.'/link/?ul='.$this->id;
             case 'complete':
-                return $urlbase.'?dl='.$this->id;
+                return $base_url.'?dl='.$this->id;
             default:
                 throw new Exception('Invalid item state');
         }

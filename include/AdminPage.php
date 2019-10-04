@@ -2,15 +2,28 @@
 class AdminPage {
     private $base = array();
     private $parts = array();
+    private $username = '';
+    private $user_displayname = '';
+    private $db = null;
     
     public function __construct() {
         $this->base = get_fragments('./include/base.html');
         $this->parts = get_fragments('./include/admin.html');
+        if(isset($_SERVER['REMOTE_USER'])) {
+            $this->username = preg_replace('/@.*$/', '', $_SERVER['REMOTE_USER']);
+        }
+        if(isset($_SERVER['displayName'])) {
+            $this->user_displayname = $_SERVER['displayName'];
+        }
+        global $db;
+        $this->db = $db;
     }
 
     public function render() {
+        $userinfo = $this->user_displayname.' ('.$this->username.')';
         print(replace(array(
-            'title' => 'DSV:s uppladdningstjänst'
+            'title' => 'DSV:s uppladdningstjänst',
+            'user' => $userinfo
         ), $this->base['head']));
         print($this->parts['base']);
         $this->print_complete();
@@ -20,12 +33,11 @@ class AdminPage {
     }
 
     private function print_complete() {
-        $list = array(new Item('5f6805ea-906d-4f1f-a008-e5aa557eb4c6',
-                               'Anna anderssons pass',
-                               'complete'));
+        $list = $this->db->get_items($this->username, 'complete');
         $out = '';
         foreach($list as $item) {
             $out .= replace(array('name' => $item->get_description(),
+                                  'ttl' => $item->get_ttl(),
                                   'link' => $item->get_url()),
                             $this->parts['dl_item']);
         }
@@ -33,12 +45,11 @@ class AdminPage {
     }
 
     private function print_pending() {
-        $list = array(new Item('303d0691-3776-467c-a90f-f50fb38609f5',
-                               'Bengt Bengtsons arbetstillstånd',
-                               'pending'));
+        $list = $this->db->get_items($this->username, 'pending');
         $out = '';
         foreach($list as $item) {
             $out .= replace(array('name' => $item->get_description(),
+                                  'ttl' => $item->get_ttl(),
                                   'link' => $item->get_url()),
                             $this->parts['ul_item']);
         }
@@ -46,9 +57,7 @@ class AdminPage {
     }
 
     private function print_pruned() {
-        $list = array(new Item('b3ea6a19-6cee-4491-9783-0b055478ce3c',
-                               'Per Perssons körkort',
-                               'pruned'));
+        $list = $this->db->get_items($this->username, 'pruned');
         $out = '';
         foreach($list as $item) {
             $out .= replace(array('name' => $item->get_description(),

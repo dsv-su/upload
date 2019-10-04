@@ -3,12 +3,16 @@
 <div id="create">
   <h2>Skapa ny länk</h2>
   <form>
+    <input type="hidden"
+           name="action"
+           value="new" />
     <label for="name">
-      Beskrivning
+      Beskrivning:
     </label>
-    <input name="name"
+    <input name="description"
            type="text"
-           placeholder="Något om vad länken är till för..." />
+           placeholder="..."
+           required />
     <button>
       Skapa
     </button>
@@ -42,14 +46,14 @@
 
 ¤¤ dl_item ¤¤
 <li>
-  <span class="label">¤name¤</span>
+  <span class="label">¤name¤</span> (raderas om ¤ttl¤ dagar)
   <br/>
   <a href="¤link¤">Ladda ner</a>
 </li>
 
 ¤¤ ul_item ¤¤
 <li>
-  <span class="label">¤name¤</span>
+  <span class="label">¤name¤</span> (giltig i ¤ttl¤ dagar till)
   <br/>
   <a href="¤link¤"
      class="ul_link">

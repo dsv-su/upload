@@ -3,7 +3,8 @@
 class Db {
     private $db;
 
-    public function __construct($db_host, $db_user, $db_pass, $db_name) {
+    public function __construct() {
+        global $db_host, $db_user, $db_pass, $db_name;
         $this->db = new mysqli($db_host, $db_user, $db_pass, $db_name);
         if($this->db->connect_errno) {
             $error = 'Failed to connect to db. The error was: '
@@ -65,6 +66,27 @@ class Db {
             default:
                 throw new Exception('More than one result available.');
         }
+    }
+
+    public function get_items($user, $state) {
+        switch($state) {
+            case 'pending':
+            case 'complete':
+            case 'pruned':
+                break;
+            default:
+                throw new Exception('Invalid item state in get_items: '.$state);
+        }
+        $stmt = $this->prepare('select * from `items` 
+                                where `owner`=? and `state`=?');
+        $stmt->bind_param('ss', $user, $state);
+        $stmt->execute();
+
+        $out = array();
+        foreach($this->result_list($stmt) as $row) {
+            $out[] = new Item($row);
+        }
+        return $out;
     }
 }
 ?>
