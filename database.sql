@@ -1,9 +1,3 @@
--- MySQL dump 10.16  Distrib 10.1.41-MariaDB, for debian-linux-gnu (i686)
---
--- Host: mysql.dsv.su.se    Database: dsv_upload
--- ------------------------------------------------------
--- Server version	10.1.41-MariaDB-0+deb9u1
-
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
@@ -15,19 +9,17 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
---
--- Table structure for table `links`
---
-
 DROP TABLE IF EXISTS `items`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `items` (
-  `owner` varchar(64) NOT NULL,
-  `uuid` varchar(64) NOT NULL,
-  `create_time` bigint(20) DEFAULT NULL,
-  `description` varchar(64) NOT NULL,
-  `state` varchar(64) NOT NULL,
+  `uuid`           varchar(64) NOT NULL,
+  `owner`          varchar(64) NOT NULL,
+  `description`    varchar(64) NOT NULL,
+  `create_time`    bigint(20)  NOT NULL,
+  `state`          varchar(64) DEFAULT 'pending',
+  `upload_time`    bigint(20)  DEFAULT NULL,
+  `upload_deleted` bigint(20)  DEFAULT NULL,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -40,5 +32,3 @@ CREATE TABLE `items` (
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
-
--- Dump completed on 2019-10-04 16:14:46

@@ -1,0 +1,33 @@
+body {
+    font: 152%/1.6 Verdana, Arial, Helvetica, sans-serif;
+    text-align: center;
+    padding-top: 10vh;
+    background-color: #002e5f;
+}
+
+h1, .message {
+    color: white;
+}
+
+img {
+    margin: 20px;
+}
+
+button {
+    border: 0;
+}
+
+#uploadfile {
+    display: none;
+}
+
+.hidden {
+    display: none;
+}
+
+.visible {
+    display: block;
+    background-color: #d95e00;
+    color: white;
+    margin-bottom: 1em;
+}

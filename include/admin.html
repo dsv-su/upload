@@ -22,6 +22,7 @@
 ¤¤ completed ¤¤
 <div id="completed">
   <h2>Färdiga uppladdningar</h2>
+  Uppladdade filer sparas i ¤delete_time¤ dagar.
   <ul>
     ¤items¤
   </ul>
@@ -30,6 +31,7 @@
 ¤¤ pending ¤¤
 <div id="pending">
   <h2>Skapade länkar</h2>
+  Skapade länkar är giltiga i ¤valid_time¤ dagar.
   <ul>
     ¤items¤
   </ul>
@@ -38,7 +40,7 @@
 ¤¤ pruned ¤¤
 <div id="pruned">
   <h2>Utgångna länkar</h2>
-  Länkar äldre än 6 månader tas bort helt och visas inte här.
+  Länkar äldre än ¤purge_time¤ dagar tas bort helt och visas inte här.
   <ul>
     ¤items¤
   </ul>
@@ -46,14 +48,14 @@
 
 ¤¤ dl_item ¤¤
 <li>
-  <span class="label">¤name¤</span> (raderas om ¤ttl¤ dagar)
+  <span class="label">¤name¤</span> (Uppladdad ¤uploaded¤, raderas om ¤ttl¤ dagar)
   <br/>
   <a href="¤link¤">Ladda ner</a>
 </li>
 
 ¤¤ ul_item ¤¤
 <li>
-  <span class="label">¤name¤</span> (giltig i ¤ttl¤ dagar till)
+  <span class="label">¤name¤</span> (Skapad ¤created¤, giltig i ¤ttl¤ dagar till)
   <br/>
   <a href="¤link¤"
      class="ul_link">
@@ -69,4 +71,3 @@
     ¤link¤
   </span>
 </li>
-

@@ -4,14 +4,21 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" type="text/css" href="./template.css" />
+    <link rel="shortcut icon" href="../images/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" href="../template.css" />
     <link rel="stylesheet" type="text/css" href="./style.css" />
     <script type="text/javascript" src="./script.js"></script>
     <title>¤title¤</title>
   </head>
   <body>
+    <a href="//dsv.su.se"><img src="../images/dsv_logo_sv.png"
+                               id="dsv_logo"/></a>
+    <a href="//su.se"><img src="../images/su_logo_sv.gif"
+         id="su_logo"/></a>
     <h1>Ladda upp en fil</h1>
+    <div class="¤error¤">
+      ¤message¤
+    </div>
     ¤content¤
   </body>
 </html>
@@ -19,8 +26,9 @@
 ¤¤ form ¤¤
 <form name="upload"
       action="."
+      method="POST"
       enctype="multipart/form-data">
-  <input type="hidden" name="id" value="¤id¤" />
+  <input type="hidden" name="uuid" value="¤uuid¤" />
   <input id="uploadfile"
          name="uploadfile"
          type="file"
@@ -32,12 +40,12 @@
          placeholder="Välj en fil..."
          onclick="select_file(event)"
          readonly />
-  <button onclick="upload_progress(event)">
+  <button>
     Ladda upp
   </button>
 </form>
 
-¤¤ error ¤¤
-<span class="error">
+¤¤ message ¤¤
+<span class="message">
   ¤message¤
 </span>

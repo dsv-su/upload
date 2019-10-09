@@ -1,22 +1,20 @@
 <?php
 class AdminPage {
-    private $base = array();
-    private $parts = array();
+    private $db;
+    private $base;
+    private $parts;
     private $username = '';
     private $user_displayname = '';
-    private $db = null;
     
     public function __construct() {
+        global $db;
+        $this->db = $db;
         $this->base = get_fragments('./include/base.html');
         $this->parts = get_fragments('./include/admin.html');
-        if(isset($_SERVER['REMOTE_USER'])) {
-            $this->username = preg_replace('/@.*$/', '', $_SERVER['REMOTE_USER']);
-        }
+        $this->username = get_user();
         if(isset($_SERVER['displayName'])) {
             $this->user_displayname = $_SERVER['displayName'];
         }
-        global $db;
-        $this->db = $db;
     }
 
     public function render() {
@@ -26,22 +24,10 @@ class AdminPage {
             'user' => $userinfo
         ), $this->base['head']));
         print($this->parts['base']);
-        $this->print_complete();
         $this->print_pending();
+        $this->print_completed();
         $this->print_pruned();
         print($this->base['foot']);
-    }
-
-    private function print_complete() {
-        $list = $this->db->get_items($this->username, 'complete');
-        $out = '';
-        foreach($list as $item) {
-            $out .= replace(array('name' => $item->get_description(),
-                                  'ttl' => $item->get_ttl(),
-                                  'link' => $item->get_url()),
-                            $this->parts['dl_item']);
-        }
-        print(replace(array('items' => $out), $this->parts['completed']));
     }
 
     private function print_pending() {
@@ -49,11 +35,31 @@ class AdminPage {
         $out = '';
         foreach($list as $item) {
             $out .= replace(array('name' => $item->get_description(),
+                                  'created' => $item->get_create_time('Y-m-d'),
                                   'ttl' => $item->get_ttl(),
                                   'link' => $item->get_url()),
                             $this->parts['ul_item']);
         }
-        print(replace(array('items' => $out), $this->parts['pending']));
+        global $valid_time;
+        print(replace(array('valid_time' => $valid_time,
+                            'items' => $out),
+                      $this->parts['pending']));
+    }
+
+    private function print_completed() {
+        $list = $this->db->get_items($this->username, 'completed');
+        $out = '';
+        foreach($list as $item) {
+            $out .= replace(array('name' => $item->get_description(),
+                                  'uploaded' => $item->get_upload_time('Y-m-d'),
+                                  'ttl' => $item->get_ttl(),
+                                  'link' => $item->get_url()),
+                            $this->parts['dl_item']);
+        }
+        global $delete_time;
+        print(replace(array('delete_time' => $delete_time,
+                            'items' => $out),
+                      $this->parts['completed']));
     }
 
     private function print_pruned() {
@@ -64,7 +70,10 @@ class AdminPage {
                                   'link' => $item->get_url()),
                             $this->parts['old_link_item']);
         }
-        print(replace(array('items' => $out), $this->parts['pruned']));
+        global $purge_time;
+        print(replace(array('purge_time' => $purge_time,
+                            'items' => $out),
+                      $this->parts['pruned']));
     }
 }
 ?>

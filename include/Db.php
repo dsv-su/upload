@@ -11,6 +11,7 @@ class Db {
                     .$this->db->connect_error;
             throw new Exception($error);
         }
+        $this->update_states();
     }
 
     public function prepare($statement) {
@@ -55,7 +56,7 @@ class Db {
     }
 
     public static function result_single($statement) {
-        $out = result_list($statement);
+        $out = self::result_list($statement);
         switch(count($out)) {
             case 0:
                 return null;
@@ -68,11 +69,61 @@ class Db {
         }
     }
 
+    private function update_states() {
+        $stmt = $this->prepare('select * from `items`');
+        self::execute($stmt);
+        foreach(self::result_list($stmt) as $row) {
+            $item = new Item($row);
+            $uuid = $item->get_uuid();
+            $state = $item->get_state();
+            $ttl = $item->get_ttl();
+            $now = time();
+            if($ttl <=0) {
+                switch($state) {
+                    case Item::PEND:
+                        $newstate = Item::PRUN;
+                        $stmt = $this->prepare('update `items` set `state`=?
+                                                where `uuid`=?');
+                        $stmt->bind_param('ss', $newstate, $uuid);
+                        self::execute($stmt);
+                    break;
+                    case Item::COMP:
+                        $newstate = Item::PRUN;
+                        $stmt = $this->prepare('update `items` set
+                                                    `state`=?,
+                                                    `upload_deleted`=?
+                                                where `uuid`=?');
+                        $stmt->bind_param('sis',
+                                          $newstate, $now, $uuid);
+                        self::execute($stmt);
+                    break;
+                    case Item::PRUN:
+                        $stmt = $this->prepare('delete from `items`
+                                                where `uuid`=?');
+                        $stmt->bind_param('s', $uuid);
+                        self::execute($stmt);
+                        break;
+                    default:
+                        throw new Exception('Invalid state for Item '
+                                           .$uuid.": $state in Db constructor");
+                }
+            }
+        }
+    }
+
+    public function get_item($uuid) {
+        $stmt = $this->prepare('select * from `items` where `uuid`=?');
+        $stmt->bind_param('s', $uuid);
+        self::execute($stmt);
+        $result = self::result_single($stmt);
+        return new Item($result);
+    }
+    
     public function get_items($user, $state) {
         switch($state) {
-            case 'pending':
-            case 'complete':
-            case 'pruned':
+            case Item::PEND:
+            case Item::COMP:
+            case Item::PRUN:
                 break;
             default:
                 throw new Exception('Invalid item state in get_items: '.$state);
@@ -80,13 +131,147 @@ class Db {
         $stmt = $this->prepare('select * from `items` 
                                 where `owner`=? and `state`=?');
         $stmt->bind_param('ss', $user, $state);
-        $stmt->execute();
+        self::execute($stmt);
 
         $out = array();
-        foreach($this->result_list($stmt) as $row) {
+        foreach(self::result_list($stmt) as $row) {
             $out[] = new Item($row);
         }
         return $out;
+    }
+
+    public function create_item($description) {
+        $description = htmlspecialchars($description);
+        $owner = get_user();
+        $stmt = $this->prepare('select `uuid` from `items`');
+        self::execute($stmt);
+        $uuids = array();
+        foreach(self::result_list($stmt) as $row) {
+            $uuids[] = $row['uuid'];
+        }
+        $uuid = gen_uuid();
+        while(in_array($uuid, $uuids)) {
+            $uuid = gen_uuid();
+        }
+        $now = time();
+
+        $stmt = $this->prepare('insert into `items`
+                                    (`uuid`, `owner`, `description`, `create_time`)
+                                    values (?, ?, ?, ?)');
+        $stmt->bind_param('sssi', $uuid, $owner, $description, $now);
+        self::execute($stmt);
+
+        return $this->get_item($uuid);
+    }
+
+    public function save_file($uuid, $file) {
+        $result = array('state' => 'error');
+        $item = null;
+        try {
+            $item = $this->get_item($uuid);
+        } catch(Exception $e) {
+            $result['message'] = 'Kunde inte hitta länk-id:t.';
+            return $result;
+        }
+        if($item->get_state() != Item::PEND) {
+            $result['message'] = 'Den här länken är ogiltig för uppladdning.';
+            return $result;
+        }
+        global $files_dir;
+        $savepath = $files_dir.'/'.$uuid;
+        if(file_exists($savepath)) {
+            $result['message'] = 'Det finns redan en uppladdad fil.';
+            return $result;
+        }
+        if(!isset($file['error']) || is_array($file['error'])) {
+            $result['message'] = "Ogiltigt anrop.";
+            return $result;
+        }
+        switch($file['error']) {
+            case UPLOAD_ERR_OK:
+                break;
+            case UPLOAD_ERR_NO_FILE:
+                $result['message'] = 'Ingen fil skickades.';
+                return $result;
+            case UPLOAD_ERR_INI_SIZE:
+            case UPLOAD_ERR_FORM_SIZE:
+                $result['message'] = 'Den uppladdade filen var för stor.';
+                return $result;
+            default:
+                $result['message'] = 'Ett okänt fel har inträffat.';
+                return $result;
+        }
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $tmp_name = $file['tmp_name'];
+        $mime = $finfo->file($tmp_name);
+        global $formats;
+        $extension = '';
+        foreach($formats as $ext => $mimetype) {
+            if($mimetype === $mime) {
+                $extension = $ext;
+                break;
+            }
+        }
+        if(!$extension) {
+            $result['message'] = 'Ogiltigt filformat. Formaten som tillåts är:'
+                                .'<br/>'.implode(', ', array_keys($formats));
+            return $result;
+        }
+        if(!move_uploaded_file($tmp_name, $savepath)) {
+            $result['message'] = 'Filen kunde inte sparas.';
+            return $result;
+        }
+        $now = time();
+        $newstate = Item::COMP;
+        $stmt = $this->prepare('update `items` set `state`=?, `upload_time`=?
+                                where `uuid`=?');
+        $stmt->bind_param('sis', $newstate, $now, $uuid);
+        self::execute($stmt);
+        $result['state'] = 'success';
+        return $result;
+    }
+
+    public function get_file($uuid) {
+        $item = self::get_item($uuid);
+        $user = get_user();
+        if($item->get_owner() != $user) {
+            print("Du har inte tillgång till den här filen.");
+            exit(1);
+        }
+        if($item->get_state() != Item::COMP) {
+            print("Den här filen är inte nedladdningsbar.");
+            exit(1);
+        }
+        global $files_dir;
+        $filepath = $files_dir.'/'.$uuid;
+        if(!file_exists($filepath)) {
+            print("Filen har försvunnit?!");
+            exit(1);
+        }
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->file($filepath);
+        global $formats;
+        $extension = '';
+        foreach($formats as $ext => $mimetype) {
+            if($mimetype === $mime) {
+                $extension = $ext;
+                break;
+            }
+        }
+        if(!$extension) {
+            print('Filtypen känns inte igen: '.$mime);
+            exit(1);
+        }
+        $filename = $item->get_description();
+        header('Content-Description: File Transfer');
+        header('Content-Type: application/octet-stream');
+        header('Content-Disposition: attachment; filename="'
+              .$filename.'.'.$extension);
+        header('Expires: 0');
+        header('Cache-Control: no-cache');
+        header('Content-length: '.filesize($filepath));
+        readfile($filepath);
+        exit(0);
     }
 }
 ?>
