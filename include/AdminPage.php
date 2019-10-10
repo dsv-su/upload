@@ -20,7 +20,7 @@ class AdminPage {
     public function render() {
         $userinfo = $this->user_displayname.' ('.$this->username.')';
         print(replace(array(
-            'title' => 'DSV:s uppladdningstjänst',
+            'title' => 'Administrera uppladdningslänkar',
             'user' => $userinfo
         ), $this->base['head']));
         print($this->parts['base']);

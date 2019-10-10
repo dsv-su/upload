@@ -70,43 +70,60 @@ class Db {
     }
 
     private function update_states() {
-        $stmt = $this->prepare('select * from `items`');
-        self::execute($stmt);
-        foreach(self::result_list($stmt) as $row) {
-            $item = new Item($row);
-            $uuid = $item->get_uuid();
-            $state = $item->get_state();
-            $ttl = $item->get_ttl();
-            $now = time();
-            if($ttl <=0) {
-                switch($state) {
-                    case Item::PEND:
-                        $newstate = Item::PRUN;
-                        $stmt = $this->prepare('update `items` set `state`=?
-                                                where `uuid`=?');
-                        $stmt->bind_param('ss', $newstate, $uuid);
-                        self::execute($stmt);
-                    break;
-                    case Item::COMP:
-                        $newstate = Item::PRUN;
-                        $stmt = $this->prepare('update `items` set
-                                                    `state`=?,
-                                                    `upload_deleted`=?
-                                                where `uuid`=?');
-                        $stmt->bind_param('sis',
-                                          $newstate, $now, $uuid);
-                        self::execute($stmt);
-                    break;
-                    case Item::PRUN:
-                        $stmt = $this->prepare('delete from `items`
-                                                where `uuid`=?');
-                        $stmt->bind_param('s', $uuid);
-                        self::execute($stmt);
-                        break;
-                    default:
-                        throw new Exception('Invalid state for Item '
-                                           .$uuid.": $state in Db constructor");
+        $deletefiles = array();
+        try {
+            $this->begin_trans();
+            $stmt = $this->prepare('select * from `items`');
+            self::execute($stmt);
+            foreach(self::result_list($stmt) as $row) {
+                $item = new Item($row);
+                $uuid = $item->get_uuid();
+                $state = $item->get_state();
+                $ttl = $item->get_ttl();
+                $now = time();
+                if($ttl <=0) {
+                    switch($state) {
+                        case Item::PEND:
+                            $newstate = Item::PRUN;
+                            $stmt = $this->prepare('update `items` set `state`=?
+                                                    where `uuid`=?');
+                            $stmt->bind_param('ss', $newstate, $uuid);
+                            self::execute($stmt);
+                            break;
+                        case Item::COMP:
+                            $newstate = Item::PRUN;
+                            $stmt = $this->prepare('update `items` set
+                                                        `state`=?,
+                                                        `upload_deleted`=?
+                                                    where `uuid`=?');
+                            $stmt->bind_param('sis',
+                                              $newstate, $now, $uuid);
+                            self::execute($stmt);
+                            $deletefiles[] = $uuid;
+                            break;
+                        case Item::PRUN:
+                            $stmt = $this->prepare('delete from `items`
+                                                    where `uuid`=?');
+                            $stmt->bind_param('s', $uuid);
+                            self::execute($stmt);
+                            break;
+                        default:
+                            throw new Exception('Invalid state for Item '
+                                               .$uuid.': '.$state
+                                               .' in Db constructor');
+                    }
                 }
+            }
+            $this->commit_trans();
+        } catch(Exception $e) {
+            $this->revert_trans();
+            throw $e;
+        }
+        global $files_dir;
+        foreach($deletefiles as $uuid) {
+            $filepath = $files_dir.'/'.$uuid;
+            if(file_exists($filepath)) {
+                unlink($filepath);
             }
         }
     }
@@ -141,27 +158,34 @@ class Db {
     }
 
     public function create_item($description) {
-        $description = htmlspecialchars($description);
-        $owner = get_user();
-        $stmt = $this->prepare('select `uuid` from `items`');
-        self::execute($stmt);
-        $uuids = array();
-        foreach(self::result_list($stmt) as $row) {
-            $uuids[] = $row['uuid'];
-        }
-        $uuid = gen_uuid();
-        while(in_array($uuid, $uuids)) {
+        try {
+            $this->begin_trans();
+            $description = htmlspecialchars($description);
+            $owner = get_user();
+            $stmt = $this->prepare('select `uuid` from `items`');
+            self::execute($stmt);
+            $uuids = array();
+            foreach(self::result_list($stmt) as $row) {
+                $uuids[] = $row['uuid'];
+            }
             $uuid = gen_uuid();
+            while(in_array($uuid, $uuids)) {
+                $uuid = gen_uuid();
+            }
+            $now = time();
+
+            $stmt = $this->prepare('insert into `items` (
+                                        `uuid`, `owner`,
+                                        `description`, `create_time`
+                                    ) values (?, ?, ?, ?)');
+            $stmt->bind_param('sssi', $uuid, $owner, $description, $now);
+            self::execute($stmt);
+            $this->commit_trans();
+            return $this->get_item($uuid);
+        } catch(Exception $e) {
+            $this->revert_trans();
+            throw $e;
         }
-        $now = time();
-
-        $stmt = $this->prepare('insert into `items`
-                                    (`uuid`, `owner`, `description`, `create_time`)
-                                    values (?, ?, ?, ?)');
-        $stmt->bind_param('sssi', $uuid, $owner, $description, $now);
-        self::execute($stmt);
-
-        return $this->get_item($uuid);
     }
 
     public function save_file($uuid, $file) {
@@ -262,11 +286,10 @@ class Db {
             print('Filtypen känns inte igen: '.$mime);
             exit(1);
         }
-        $filename = $item->get_description();
+        $filename = $item->get_description().'.'.$extension;
         header('Content-Description: File Transfer');
         header('Content-Type: application/octet-stream');
-        header('Content-Disposition: attachment; filename="'
-              .$filename.'.'.$extension);
+        header('Content-Disposition: attachment; filename="'.$filename.'"');
         header('Expires: 0');
         header('Cache-Control: no-cache');
         header('Content-length: '.filesize($filepath));

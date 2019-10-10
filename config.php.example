@@ -1,0 +1,36 @@
+<?php
+
+# Site base URL (no trailing slash)
+$base_url = 'https://example.com/example';
+
+# Database settings
+$db_name = 'database';
+$db_host = 'localhost';
+$db_pass = 'password';
+$db_user = $db_name;
+
+# File storage path (absolute, MUST be outside the web root)
+$files_dir = '/upload-files';
+
+# Array of file formats to be accepted
+#   extension => mime-type
+# The mime type is what will be checked on upload.
+$formats = array(
+    'jpg' => 'image/jpeg',
+    'gif' => 'image/gif',
+    'png' => 'image/png',
+    'pdf' => 'application/pdf',
+    'txt' => 'text/plain',
+);
+
+# Number of days until a newly created link becomes invalid
+$valid_time = 10;
+
+# Number of days to keep uploaded files
+$delete_time = 30;
+
+# Number of days after creation,
+# after which a link is completely purged from the database
+$purge_time = 180;
+
+?>
