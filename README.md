@@ -21,8 +21,8 @@ Each authenticated user will be able to create upload links and download any fil
 to their created links. Once a link has been created, anyone with the link can upload a single 
 file to the system, which will then be made available to the user who created the link.
 
-There is no provision for making uploaded files available to other users within the system, 
-the only user able to access an uploaded file is the one who created the link.
+There is no provision for making uploaded files available to other users within the system. 
+The only user able to access an uploaded file is the one who created the link.
 
 A link will accept exactly one upload. Once a file has been successfully saved by the system,
 that link will no longer accept uploads.
