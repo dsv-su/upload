@@ -31,3 +31,25 @@ button {
     color: white;
     margin-bottom: 1em;
 }
+
+@media screen and (max-width: 610px) {
+    #su_logo {
+        display: none;
+    }
+
+    #dsv_logo > img {
+        max-width: 90vw;
+    }
+}
+
+@media screen and (max-width: 450px) {
+    body {
+        font-size: 114%;
+    }
+}
+
+@media screen and (max-width: 290px) {
+    body {
+        font-size: 76%;
+    }
+}
