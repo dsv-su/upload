@@ -32,7 +32,7 @@ class UploadPage {
         if($message) {
             $error = 'visible';
         }
-        print(replace(array('title' => 'DSV:s uppladdningstjänst',
+        print(replace(array('title' => 'DSV upload service',
                             'error' => $error,
                             'message' => $message,
                             'content' => $this->build_content()),
@@ -41,26 +41,26 @@ class UploadPage {
 
     private function build_content() {
         if($this->uuid === '') {
-            return replace(array('message' => 'Uppladdnings-id saknas'),
+            return replace(array('message' => 'No upload ID provided'),
                            $this->parts['message']);
         }
         if($this->item === null) {
-            return replace(array('message' => 'Ogiltigt uppladdnings-id'),
+            return replace(array('message' => 'Invalid upload ID'),
                            $this->parts['message']);
         }
         switch($this->item->get_state()) {
             case Item::COMP:
-                return replace(array('message' => 'Uppladdning klar!'),
+                return replace(array('message' => 'Upload done!'),
                                $this->parts['message']);
             case Item::PRUN:
-                $message = 'Länkens giltighetstid har gått ut';
+                $message = 'This link has expired.';
                 return replace(array('message' => $message),
                                $this->parts['message']);
             case Item::PEND:
                 return replace(array('uuid' => $this->uuid),
                                $this->parts['form']);
             default:
-                return replace(array('message' => 'Okänt fel'),
+                return replace(array('message' => 'Unknown error'),
                                $this->parts['message']);
         }
     }

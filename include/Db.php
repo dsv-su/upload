@@ -194,35 +194,35 @@ class Db {
         try {
             $item = $this->get_item($uuid);
         } catch(Exception $e) {
-            $result['message'] = 'Kunde inte hitta länk-id:t.';
+            $result['message'] = 'Unknown upload ID.';
             return $result;
         }
         if($item->get_state() != Item::PEND) {
-            $result['message'] = 'Den här länken är ogiltig för uppladdning.';
+            $result['message'] = 'This link is in an invalid state.';
             return $result;
         }
         global $files_dir;
         $savepath = $files_dir.'/'.$uuid;
         if(file_exists($savepath)) {
-            $result['message'] = 'Det finns redan en uppladdad fil.';
+            $result['message'] = 'This link cannot accept further uploads.';
             return $result;
         }
         if(!isset($file['error']) || is_array($file['error'])) {
-            $result['message'] = "Ogiltigt anrop.";
+            $result['message'] = "Invalid call.";
             return $result;
         }
         switch($file['error']) {
             case UPLOAD_ERR_OK:
                 break;
             case UPLOAD_ERR_NO_FILE:
-                $result['message'] = 'Ingen fil skickades.';
+                $result['message'] = 'No file was sent.';
                 return $result;
             case UPLOAD_ERR_INI_SIZE:
             case UPLOAD_ERR_FORM_SIZE:
-                $result['message'] = 'Den uppladdade filen var för stor.';
+                $result['message'] = 'The chose file is too large.';
                 return $result;
             default:
-                $result['message'] = 'Ett okänt fel har inträffat.';
+                $result['message'] = 'An unknown error has occurred.';
                 return $result;
         }
         $finfo = new finfo(FILEINFO_MIME_TYPE);
@@ -237,12 +237,12 @@ class Db {
             }
         }
         if(!$extension) {
-            $result['message'] = 'Ogiltigt filformat. Formaten som tillåts är:'
+            $result['message'] = 'Invalid file type. Permitted file types are:'
                                 .'<br/>'.implode(', ', array_keys($formats));
             return $result;
         }
         if(!move_uploaded_file($tmp_name, $savepath)) {
-            $result['message'] = 'Filen kunde inte sparas.';
+            $result['message'] = 'The file could not be saved.';
             return $result;
         }
         $now = time();
