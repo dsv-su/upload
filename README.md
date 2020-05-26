@@ -13,7 +13,8 @@ In order to function as intended, the following criteria need to be met:
  1. Copy ```config.php.example``` to ```config.php``` and update the relevant settings
  1. Configure the web server to protect the application root directory with some 
     authentication method
- 1. Exclude the subdirectories ```link``` and ```images``` from authentication
+ 1. Configure the web server to follow symbolic links, at least in the ```link``` subdirectory
+ 1. Exclude the subdirectory ```link``` from authentication
  1. Load the database dump ```database.sql``` into the database specified in ```config.php```
 
 ## General usage
