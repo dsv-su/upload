@@ -70,6 +70,8 @@ class Db {
     }
 
     private function update_states() {
+        global $delete_time, $purge_time;
+
         $deletefiles = array();
         try {
             $this->begin_trans();
@@ -81,23 +83,26 @@ class Db {
                 $state = $item->get_state();
                 $ttl = $item->get_ttl();
                 $now = time();
-                if($ttl <=0) {
+                if($ttl <= 0) {
                     switch($state) {
                         case Item::PEND:
                             $newstate = Item::PRUN;
-                            $stmt = $this->prepare('update `items` set `state`=?
+                            $newend = tsDaysInFuture($purge_time);
+                            $stmt = $this->prepare('update `items` set
+                                                        `state`=?,
+                                                        `end_time`=?
                                                     where `uuid`=?');
-                            $stmt->bind_param('ss', $newstate, $uuid);
+                            $stmt->bind_param('sis', $newstate, $newend, $uuid);
                             self::execute($stmt);
                             break;
                         case Item::COMP:
                             $newstate = Item::PRUN;
+                            $newend = tsDaysInFuture($purge_time);
                             $stmt = $this->prepare('update `items` set
                                                         `state`=?,
-                                                        `upload_deleted`=?
+                                                        `end_time`=?
                                                     where `uuid`=?');
-                            $stmt->bind_param('sis',
-                                              $newstate, $now, $uuid);
+                            $stmt->bind_param('sis', $newstate, $newend, $uuid);
                             self::execute($stmt);
                             $deletefiles[] = $uuid;
                             break;
@@ -158,6 +163,7 @@ class Db {
     }
 
     public function create_item($description) {
+        global $valid_time;
         try {
             $this->begin_trans();
             $description = htmlspecialchars($description);
@@ -173,12 +179,12 @@ class Db {
                 $uuid = gen_uuid();
             }
             $now = time();
-
+            $end = tsDaysInFuture($valid_time);
             $stmt = $this->prepare('insert into `items` (
                                         `uuid`, `owner`,
-                                        `description`, `create_time`
-                                    ) values (?, ?, ?, ?)');
-            $stmt->bind_param('sssi', $uuid, $owner, $description, $now);
+                                        `description`, `create_time`, `end_time`
+                                    ) values (?, ?, ?, ?, ?)');
+            $stmt->bind_param('sssii', $uuid, $owner, $description, $now, $end);
             self::execute($stmt);
             $this->commit_trans();
             return $this->get_item($uuid);
@@ -246,10 +252,15 @@ class Db {
             return $result;
         }
         $now = time();
+        global $delete_time;
+        $end = tsDaysInFuture($delete_time);;
         $newstate = Item::COMP;
-        $stmt = $this->prepare('update `items` set `state`=?, `upload_time`=?
+        $stmt = $this->prepare('update `items` set
+                                    `state`=?,
+                                    `upload_time`=?,
+                                    `end_time`=?
                                 where `uuid`=?');
-        $stmt->bind_param('sis', $newstate, $now, $uuid);
+        $stmt->bind_param('siis', $newstate, $now, $end, $uuid);
         self::execute($stmt);
         $result['state'] = 'success';
         return $result;

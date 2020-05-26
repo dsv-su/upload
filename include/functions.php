@@ -91,6 +91,12 @@ function dateFromTimestamp($ts) {
     return null;
 }
 
+function tsDaysInFuture($days) {
+    $now = new DateTime();
+    $now->add(new DateInterval('P'.$days.'D'));
+    return $now->getTimestamp();
+}
+
 // Taken from this link:
 // http://www.php.net/manual/en/function.uniqid.php#94959
 function gen_uuid() {

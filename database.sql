@@ -19,7 +19,7 @@ CREATE TABLE `items` (
   `create_time`    bigint(20)  NOT NULL,
   `state`          varchar(64) DEFAULT 'pending',
   `upload_time`    bigint(20)  DEFAULT NULL,
-  `upload_deleted` bigint(20)  DEFAULT NULL,
+  `end_time`       bigint(20)  NOT NULL,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;

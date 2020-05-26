@@ -8,7 +8,7 @@ class Item {
     private $description;
     private $create_time;
     private $upload_time;
-    private $upload_deleted;
+    private $end_time;
     private $state;
     
     public function __construct($db_row) {
@@ -17,7 +17,7 @@ class Item {
         $this->description = $db_row['description'];
         $this->create_time = dateFromTimestamp($db_row['create_time']);
         $this->upload_time = dateFromTimestamp($db_row['upload_time']);
-        $this->upload_deleted = dateFromTimestamp($db_row['upload_deleted']);
+        $this->end_time = dateFromTimestamp($db_row['end_time']);
         $state = $db_row['state'];
         switch($state) {
             case Item::COMP:
@@ -61,32 +61,16 @@ class Item {
         return $this->upload_time->format($format);
     }
 
-    public function get_ttl() {
-        $interval = null;
-        $base = null;
-        switch($this->get_state()) {
-            case Item::PEND:
-                global $valid_time;
-                $interval = new DateInterval('P'.$valid_time.'D');
-                $base = $this->create_time;
-                break;
-            case Item::COMP:
-                global $delete_time;
-                $interval = new DateInterval('P'.$delete_time.'D');
-                $base = $this->upload_time;
-                break;
-            case Item::PRUN:
-                global $purge_time;
-                $interval = new DateInterval('P'.$purge_time.'D');
-                $base = $this->create_time;
-                break;
-            default:
-                throw new Exception('Invalid state for Item '
-                                   .$this->uuid.": $state in get_ttl");
+    public function get_endtime($format = null) {
+        if($format === null) {
+            return $this->end_time;
         }
-        $base->add($interval);
+        return $this->end_time->format($format);
+    }
+
+    public function get_ttl() {
         $now = new DateTime();
-        $ttl = $now->diff($base);
+        $ttl = $now->diff($this->end_time);
         return $ttl->format('%r%a');
     }
     
