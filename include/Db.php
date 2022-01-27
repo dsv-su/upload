@@ -253,7 +253,7 @@ class Db {
         }
         $now = time();
         global $delete_time;
-        $end = tsDaysInFuture($delete_time);;
+        $end = tsDaysInFuture($delete_time);
         $newstate = Item::COMP;
         $stmt = $this->prepare('update `items` set
                                     `state`=?,
