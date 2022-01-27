@@ -15,6 +15,8 @@ if(isset($_POST['uuid'])) {
     $result = $db->save_file($uuid, $_FILES['uploadfile']);
     if($result['state'] !== 'success') {
         setcookie('error', $result['message']);
+    } else {
+        notify($db->get_item($uuid));
     }
     header('Location: .?ul='.$uuid, true, 303);
 }

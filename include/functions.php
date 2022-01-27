@@ -123,4 +123,29 @@ function gen_uuid() {
                     mt_rand( 0, 0xffff )
     );
 }
+
+function notify($item) {
+    $ldap = ldap_connect('ldaps://ldap.su.se');
+    ldap_set_option($ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
+    ldap_bind($ldap);
+    
+    $uid = $item->get_owner();
+    $response = ldap_search($ldap, 'dc=su,dc=se', "uid=$uid", ['mail']);
+    $result = ldap_get_entries($ldap, $response);
+    if($result['count'] !== 1) {
+        error_log("LDAP search for '$uid' did not return exactly one result");
+        error_log("No email will be sent for upload ".$item->get_uuid());
+        return;
+    }
+    $email = $result[0]['mail'][0];
+
+    $description = $item->get_description();
+    $subject = "[DSV upload] $description har laddats upp";
+    $message = <<<END
+En fil har laddats upp till din uppladdningslänk "$description".
+Du kan ladda ner filen från https://upload.dsv.su.se.
+END;
+
+    mb_send_mail($email, $subject, $message, "From: noreply-upload@dsv.su.se");
+}
 ?>
