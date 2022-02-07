@@ -139,13 +139,13 @@ function notify($item) {
     }
     $email = $result[0]['mail'][0];
 
-    $description = $item->get_description();
-    $subject = "[DSV upload] $description har laddats upp";
-    $message = <<<END
-En fil har laddats upp till din uppladdningslänk "$description".
-Du kan ladda ner filen från https://upload.dsv.su.se.
-END;
+    $replacers = array('description' => $item->get_description(),
+                       'url'         => config\BASE_URL,
+                       'sitename'    => config\SITE_NAME);
+    $subject = replace($replacers, config\EMAIL_SUBJECT);
+    $message = replace($replacers, config\EMAIL_BODY);
 
-    mb_send_mail($email, $subject, $message, "From: noreply-upload@dsv.su.se");
+    mb_send_mail($email, $subject, $message,
+                 'From: '.config\EMAIL_SENDER);
 }
 ?>

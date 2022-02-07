@@ -4,8 +4,10 @@ class Db {
     private $db;
 
     public function __construct() {
-        global $db_host, $db_user, $db_pass, $db_name;
-        $this->db = new mysqli($db_host, $db_user, $db_pass, $db_name);
+        $this->db = new mysqli(config\DB_HOST,
+                               config\DB_USER,
+                               config\DB_PASS,
+                               config\DB_NAME);
         if($this->db->connect_errno) {
             $error = 'Failed to connect to db. The error was: '
                     .$this->db->connect_error;
@@ -70,8 +72,6 @@ class Db {
     }
 
     private function update_states() {
-        global $delete_time, $purge_time;
-
         $deletefiles = array();
         try {
             $this->begin_trans();
@@ -87,7 +87,7 @@ class Db {
                     switch($state) {
                         case Item::PEND:
                             $newstate = Item::PRUN;
-                            $newend = tsDaysInFuture($purge_time);
+                            $newend = tsDaysInFuture(config\PURGE_TIME);
                             $stmt = $this->prepare('update `items` set
                                                         `state`=?,
                                                         `end_time`=?
@@ -97,7 +97,7 @@ class Db {
                             break;
                         case Item::COMP:
                             $newstate = Item::PRUN;
-                            $newend = tsDaysInFuture($purge_time);
+                            $newend = tsDaysInFuture(config\PURGE_TIME);
                             $stmt = $this->prepare('update `items` set
                                                         `state`=?,
                                                         `end_time`=?
@@ -124,9 +124,8 @@ class Db {
             $this->revert_trans();
             throw $e;
         }
-        global $files_dir;
         foreach($deletefiles as $uuid) {
-            $filepath = $files_dir.'/'.$uuid;
+            $filepath = config\FILES_DIR.'/'.$uuid;
             if(file_exists($filepath)) {
                 unlink($filepath);
             }
@@ -163,7 +162,6 @@ class Db {
     }
 
     public function create_item($description) {
-        global $valid_time;
         try {
             $this->begin_trans();
             $description = htmlspecialchars($description);
@@ -179,7 +177,7 @@ class Db {
                 $uuid = gen_uuid();
             }
             $now = time();
-            $end = tsDaysInFuture($valid_time);
+            $end = tsDaysInFuture(config\VALID_TIME);
             $stmt = $this->prepare('insert into `items` (
                                         `uuid`, `owner`,
                                         `description`, `create_time`, `end_time`
@@ -207,8 +205,7 @@ class Db {
             $result['message'] = 'This link is in an invalid state.';
             return $result;
         }
-        global $files_dir;
-        $savepath = $files_dir.'/'.$uuid;
+        $savepath = config\FILES_DIR.'/'.$uuid;
         if(file_exists($savepath)) {
             $result['message'] = 'This link cannot accept further uploads.';
             return $result;
@@ -234,9 +231,8 @@ class Db {
         $finfo = new finfo(FILEINFO_MIME_TYPE);
         $tmp_name = $file['tmp_name'];
         $mime = $finfo->file($tmp_name);
-        global $formats;
         $extension = '';
-        foreach($formats as $ext => $mimetype) {
+        foreach(config\FORMATS as $ext => $mimetype) {
             if($mimetype === $mime) {
                 $extension = $ext;
                 break;
@@ -244,7 +240,7 @@ class Db {
         }
         if(!$extension) {
             $result['message'] = 'Invalid file type. Permitted file types are:'
-                                .'<br/>'.implode(', ', array_keys($formats));
+                                .'<br/>'.implode(', ', array_keys(config\FORMATS));
             return $result;
         }
         if(!move_uploaded_file($tmp_name, $savepath)) {
@@ -252,8 +248,7 @@ class Db {
             return $result;
         }
         $now = time();
-        global $delete_time;
-        $end = tsDaysInFuture($delete_time);
+        $end = tsDaysInFuture(config\DELETE_TIME);
         $newstate = Item::COMP;
         $stmt = $this->prepare('update `items` set
                                     `state`=?,
@@ -277,17 +272,15 @@ class Db {
             print("Den här filen är inte nedladdningsbar.");
             exit(1);
         }
-        global $files_dir;
-        $filepath = $files_dir.'/'.$uuid;
+        $filepath = config\FILES_DIR.'/'.$uuid;
         if(!file_exists($filepath)) {
             print("Filen har försvunnit?!");
             exit(1);
         }
         $finfo = new finfo(FILEINFO_MIME_TYPE);
         $mime = $finfo->file($filepath);
-        global $formats;
         $extension = '';
-        foreach($formats as $ext => $mimetype) {
+        foreach(config\FORMATS as $ext => $mimetype) {
             if($mimetype === $mime) {
                 $extension = $ext;
                 break;

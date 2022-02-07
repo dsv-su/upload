@@ -20,7 +20,7 @@ class AdminPage {
     public function render() {
         $userinfo = $this->user_displayname.' ('.$this->username.')';
         print(replace(array(
-            'title' => 'Administrera uppladdningslänkar',
+            'title' => '['.config\SITE_NAME.'] Administrera uppladdningslänkar',
             'user' => $userinfo
         ), $this->base['head']));
         print($this->parts['base']);
@@ -34,15 +34,14 @@ class AdminPage {
         $list = $this->db->get_items($this->username, 'pending');
         $out = '';
         foreach($list as $item) {
-            $out .= replace(array('name' => $item->get_description(),
+            $out .= replace(array('name'    => $item->get_description(),
                                   'created' => $item->get_create_time('Y-m-d'),
-                                  'ttl' => $item->get_ttl(),
-                                  'link' => $item->get_url()),
+                                  'ttl'     => $item->get_ttl(),
+                                  'link'    => $item->get_url()),
                             $this->parts['ul_item']);
         }
-        global $valid_time;
-        print(replace(array('valid_time' => $valid_time,
-                            'items' => $out),
+        print(replace(array('valid_time' => config\VALID_TIME,
+                            'items'      => $out),
                       $this->parts['pending']));
     }
 
@@ -50,15 +49,14 @@ class AdminPage {
         $list = $this->db->get_items($this->username, 'completed');
         $out = '';
         foreach($list as $item) {
-            $out .= replace(array('name' => $item->get_description(),
+            $out .= replace(array('name'     => $item->get_description(),
                                   'uploaded' => $item->get_upload_time('Y-m-d'),
-                                  'ttl' => $item->get_ttl(),
-                                  'link' => $item->get_url()),
+                                  'ttl'      => $item->get_ttl(),
+                                  'link'     => $item->get_url()),
                             $this->parts['dl_item']);
         }
-        global $delete_time;
-        print(replace(array('delete_time' => $delete_time,
-                            'items' => $out),
+        print(replace(array('delete_time' => config\DELETE_TIME,
+                            'items'       => $out),
                       $this->parts['completed']));
     }
 
@@ -70,9 +68,8 @@ class AdminPage {
                                   'link' => $item->get_url()),
                             $this->parts['old_link_item']);
         }
-        global $purge_time;
-        print(replace(array('purge_time' => $purge_time,
-                            'items' => $out),
+        print(replace(array('purge_time' => config\PURGE_TIME,
+                            'items'      => $out),
                       $this->parts['pruned']));
     }
 }

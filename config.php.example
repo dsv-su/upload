@@ -1,21 +1,24 @@
-<?php
+<?php namespace config;
+
+# Site name as presented in the page title and emails
+const SITE_NAME = "Example page title";
 
 # Site base URL (no trailing slash)
-$base_url = 'https://example.com/example';
+const BASE_URL = 'https://example.com/example';
 
 # Database settings
-$db_name = 'database';
-$db_host = 'localhost';
-$db_pass = 'password';
-$db_user = $db_name;
+const DB_NAME = 'database';
+const DB_USER = DB_NAME;
+const DB_PASS = 'password';
+const DB_HOST = 'localhost';
 
 # File storage path (absolute, MUST be outside the web root)
-$files_dir = '/upload-files';
+const FILES_DIR = '/upload-files';
 
 # Array of file formats to be accepted
 #   extension => mime-type
 # The mime type is what will be checked on upload.
-$formats = array(
+const FORMATS = array(
     'jpg' => 'image/jpeg',
     'gif' => 'image/gif',
     'png' => 'image/png',
@@ -24,13 +27,30 @@ $formats = array(
 );
 
 # Number of days until a newly created link becomes invalid
-$valid_time = 10;
+const VALID_TIME = 10;
 
 # Number of days to keep uploaded files
-$delete_time = 30;
+const DELETE_TIME = 30;
 
 # Number of days after creation,
 # after which a link is completely purged from the database
-$purge_time = 180;
+const PURGE_TIME = 180;
+
+# Email notification settings.
+
+# Envelope sender of notification emails
+const EMAIL_SENDER = 'noreply-upload@dsv.su.se';
+
+# Notification subject and body
+# Some placeholders are available to inject dynamic content:
+#  ¤description¤ - the name of the link that the notification is about
+#  ¤url¤ - the URL of the site
+#  ¤sitename¤ - the title of the site
+
+const EMAIL_SUBJECT = '[¤sitename¤] ¤description¤ has been uploaded';
+const EMAIL_BODY = <<<END
+A file has been uploaded to your link "¤description¤".
+The file can be downloaded at ¤url¤.
+END;
 
 ?>

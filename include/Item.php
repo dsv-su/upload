@@ -75,13 +75,12 @@ class Item {
     }
     
     public function get_url() {
-        global $base_url;
         switch($this->get_state()) {
             case Item::PEND:
             case Item::PRUN:
-                return $base_url.'/link/?ul='.$this->uuid;
+                return config\BASE_URL.'/link/?ul='.$this->uuid;
             case Item::COMP:
-                return $base_url.'?action=dl&uuid='.$this->uuid;
+                return config\BASE_URL.'?action=dl&uuid='.$this->uuid;
             default:
                 throw new Exception('Invalid state for Item '
                                    .$this->uuid.": $state in get_url");
