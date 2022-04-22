@@ -161,21 +161,24 @@ class Db {
     }
 
     public function get_items($user, $state) {
-        switch($state) {
-            case Item::PEND:
-            case Item::COMP:
-            case Item::PRUN:
-                break;
-            default:
-                throw new Exception('Invalid item state in get_items: '.$state);
-        }
         $sql = 'select `uuid` from `items`
                 where (
                     `items`.`owner`=?
                     or `items`.`uuid` in (
                         select `item` from `sharing` where `user`=?
                     )
-                ) and `state`=?'
+                ) and `state`=?';
+        switch($state) {
+            case Item::PEND:
+            case Item::PRUN:
+                $sql .= ' order by `create_time`';
+                break;
+            case Item::COMP:
+                $sql .= ' order by `upload_time`';
+                break;
+            default:
+                throw new Exception('Invalid item state in get_items: '.$state);
+        }
         $stmt = $this->prepare($sql);
         $stmt->bind_param('sss', $user, $user, $state);
         self::execute($stmt);
