@@ -57,6 +57,7 @@ class Ajax {
             $result['error'] = 'Failed to share item';
             return $result;
         }
+        notify_share($db->get_item($uuid), $user, $this->ldap);
         $result['html'] = replace(array('uuid' => $uuid,
                                         'user' => $user,
                                         'name' => $name),

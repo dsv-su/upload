@@ -14,15 +14,6 @@ class Ldap {
         return ldap_get_entries($this->conn, $result);
     }
 
-    public function get_name($uid) {
-        $data = $this->search("uid=$uid", 'cn', 'uid');
-        if($data['count'] !== 1) {
-            $m = "LDAP search for '$uid' did not return exactly one result";
-            throw new Exception($m);
-        }
-        return $data[0]['cn'][0];
-    }
-
     public function get_users($search) {
         $out = array();
         $results = $this->search("(|(sn=$search*)(givenName=$search*))",
@@ -34,6 +25,24 @@ class Ldap {
             }
         }
         return $out;
+    }
+
+    public function get_name($uid) {
+        $data = $this->search("uid=$uid", 'cn', 'uid');
+        if($data['count'] !== 1) {
+            $m = "LDAP search for '$uid' did not return exactly one result";
+            throw new Exception($m);
+        }
+        return $data[0]['cn'][0];
+    }
+
+    public function get_email($uid) {
+        $data = $this->search("uid=$uid", 'mail', 'uid');
+        if($data['count'] !== 1) {
+            $m = "LDAP search for '$uid' did not return exactly one result";
+            throw new Exception($m);
+        }
+        return $data[0]['mail'][0];
     }
 }
 

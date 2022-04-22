@@ -124,28 +124,32 @@ function gen_uuid() {
     );
 }
 
-function notify($item) {
-    $ldap = ldap_connect('ldaps://ldap.su.se');
-    ldap_set_option($ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
-    ldap_bind($ldap);
-
-    $uid = $item->get_owner();
-    $response = ldap_search($ldap, 'dc=su,dc=se', "uid=$uid", ['mail']);
-    $result = ldap_get_entries($ldap, $response);
-    if($result['count'] !== 1) {
-        error_log("LDAP search for '$uid' did not return exactly one result");
-        error_log("No email will be sent for upload ".$item->get_uuid());
-        return;
-    }
-    $email = $result[0]['mail'][0];
-
+function notify_share($item, $uid, $ldap) {
     $replacers = array('description' => $item->get_description(),
-                       'url'         => config\BASE_URL,
-                       'sitename'    => config\SITE_NAME);
-    $subject = replace($replacers, config\EMAIL_SUBJECT);
-    $message = replace($replacers, config\EMAIL_BODY);
+                       'owner'       => $ldap->get_name($item->get_owner()),
+                       'url'         => config\BASE_URL);
+    $subject = replace($replacers, config\SHARE_SUBJECT);
+    $message = replace($replacers, config\SHARE_BODY);
 
-    mb_send_mail($email, $subject, $message,
+    $email = $ldap->get_email($uid);
+    mb_send_mail($email, '['.config\SITE_NAME.'] '.$subject, $message,
                  'From: '.config\EMAIL_SENDER);
+}
+
+function notify_upload($item, $ldap) {
+    $recipients = $item->get_sharing();
+    $recipients[] = $item->get_owner();
+    foreach($recipients as $uid) {
+        $email = $ldap->get_email($uid);
+
+        $replacers = array('description' => $item->get_description(),
+                           'owner'       => $ldap->get_name($item->get_owner()),
+                           'url'         => config\BASE_URL);
+        $subject = replace($replacers, config\UPLOAD_SUBJECT);
+        $message = replace($replacers, config\UPLOAD_BODY);
+
+        mb_send_mail($email, '['.config\SITE_NAME.'] '.$subject, $message,
+                     'From: '.config\EMAIL_SENDER);
+    }
 }
 ?>

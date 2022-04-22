@@ -8,7 +8,10 @@ require('../include/functions.php');
 
 header('Content-Type: text/html; charset=UTF-8');
 
-$db = new Db();
+$db = new Db(config\DB_HOST, config\DB_USER,
+             config\DB_PASS, config\DB_NAME);
+$ldap = new Ldap(config\LDAP_SERVER, config\BASE_DN);
+
 
 if(isset($_POST['uuid'])) {
     $uuid = $_POST['uuid'];
@@ -16,7 +19,7 @@ if(isset($_POST['uuid'])) {
     if($result['state'] !== 'success') {
         setcookie('error', $result['message']);
     } else {
-        notify($db->get_item($uuid));
+        notify_upload($db->get_item($uuid), $ldap);
     }
     header('Location: .?ul='.$uuid, true, 303);
 }
