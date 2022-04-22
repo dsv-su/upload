@@ -8,24 +8,17 @@ require('./include/functions.php');
 
 header('Content-Type: text/html; charset=UTF-8');
 
-$db = new Db();
+$db = new Db(config\DB_HOST, config\DB_USER,
+             config\DB_PASS, config\DB_NAME);
+$ldap = new Ldap(config\LDAP_SERVER, config\BASE_DN);
 
 if(isset($_GET['action'])) {
-    switch($_GET['action']) {
-        case 'new':
-            $db->create_item($_GET['description']);
-            header('Location: .', true, 303);
-            break;
-        case 'dl':
-            $db->get_file($_GET['uuid']);
-            exit(0);
-        default:
-            print('Unknown action.');
-            exit(1);
-    }
+    $ajax = new Ajax($db, $ldap);
+    $result = $ajax->process();
+    exit($result);
 }
 
-$page = new AdminPage();
+$page = new AdminPage(config\SITE_NAME, $db, $ldap);
 $page->render();
 
 ?>

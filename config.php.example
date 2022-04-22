@@ -36,6 +36,10 @@ const DELETE_TIME = 30;
 # after which a link is completely purged from the database
 const PURGE_TIME = 180;
 
+# User lookup settings
+const LDAP_SERVER = "ldap://ldap.example.com/";
+const BASE_DN = "dc=example,dc=com";
+
 # Email notification settings.
 
 # Envelope sender of notification emails

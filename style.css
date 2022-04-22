@@ -1,7 +1,69 @@
+.bold {
+    font-weight: bold;
+}
+
+.hidden {
+    display: none;
+}
+
 .userinfo {
     padding: 5pt;
 }
 
-.label {
-    font-weight: bold;
+span.intro:only-child::after {
+    content: "Ingen";
+}
+
+.pill {
+    display: inline-block;
+    margin: 4px;
+    background-color: #e0e0e0;
+    padding: 0 8px;
+    border-radius: 12px;
+}
+
+.delete:hover {
+    cursor: pointer;
+}
+
+.delete svg {
+    height: 1.2em;
+    width: 1.2em;
+    vertical-align: top;
+}
+
+ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+li {
+    background-color: #f3f3f3;
+    padding: 1em;
+    margin: 0.5em 0;
+    display: grid;
+    grid-template-areas: "name info"
+                         "link link"
+                         "sharing sharing";
+}
+
+li:nth-child(2n) {
+    background-color: #fafafa;
+}
+
+.name {
+    grid-area: name;
+}
+
+.info {
+    grid-area: info;
+    text-align: right;
+}
+
+.link {
+    grid-area: link;
+}
+
+.sharing {
+    grid-area: sharing;
 }

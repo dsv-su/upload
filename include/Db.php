@@ -3,11 +3,8 @@
 class Db {
     private $db;
 
-    public function __construct() {
-        $this->db = new mysqli(config\DB_HOST,
-                               config\DB_USER,
-                               config\DB_PASS,
-                               config\DB_NAME);
+    public function __construct($host, $user, $pass, $db) {
+        $this->db = new mysqli($host, $user, $pass, $db);
         if($this->db->connect_errno) {
             $error = 'Failed to connect to db. The error was: '
                     .$this->db->connect_error;
@@ -24,7 +21,7 @@ class Db {
             $error .= $this->db->error.' ('.$this->db->errno.')';
             throw new Exception($error);
         }
-        
+
         return $s;
     }
 
@@ -75,10 +72,10 @@ class Db {
         $deletefiles = array();
         try {
             $this->begin_trans();
-            $stmt = $this->prepare('select * from `items`');
+            $stmt = $this->prepare('select `uuid` from `items`');
             self::execute($stmt);
             foreach(self::result_list($stmt) as $row) {
-                $item = new Item($row);
+                $item = $this->get_item($row['uuid']);
                 $uuid = $item->get_uuid();
                 $state = $item->get_state();
                 $ttl = $item->get_ttl();
@@ -132,14 +129,37 @@ class Db {
         }
     }
 
+    private function check_owner($uuid) {
+        $owner = get_user();
+        $check = $this->prepare('select `owner` from `items` where `uuid`=?');
+        $check->bind_param('s', $uuid);
+        self::execute($check);
+        if(self::result_single($check)['owner'] === $owner) {
+            return true;
+        }
+        return false;
+    }
+
     public function get_item($uuid) {
         $stmt = $this->prepare('select * from `items` where `uuid`=?');
         $stmt->bind_param('s', $uuid);
         self::execute($stmt);
-        $result = self::result_single($stmt);
-        return new Item($result);
+        $item = self::result_single($stmt);
+
+        $stmt = $this->prepare('select `user` from `sharing` where `item`=?');
+        $stmt->bind_param('s', $uuid);
+        self::execute($stmt);
+        $shared_users = array();
+        foreach(self::result_list($stmt) as $row) {
+            $shared_users[] = $row['user'];
+        }
+
+        return new Item($uuid, $item['owner'], $item['description'],
+                        $item['state'], $shared_users,
+                        $item['create_time'], $item['upload_time'],
+                        $item['end_time']);
     }
-    
+
     public function get_items($user, $state) {
         switch($state) {
             case Item::PEND:
@@ -149,14 +169,20 @@ class Db {
             default:
                 throw new Exception('Invalid item state in get_items: '.$state);
         }
-        $stmt = $this->prepare('select * from `items` 
-                                where `owner`=? and `state`=?');
-        $stmt->bind_param('ss', $user, $state);
+        $sql = 'select `uuid` from `items`
+                where (
+                    `items`.`owner`=?
+                    or `items`.`uuid` in (
+                        select `item` from `sharing` where `user`=?
+                    )
+                ) and `state`=?'
+        $stmt = $this->prepare($sql);
+        $stmt->bind_param('sss', $user, $user, $state);
         self::execute($stmt);
 
         $out = array();
         foreach(self::result_list($stmt) as $row) {
-            $out[] = new Item($row);
+            $out[] = $this->get_item($row['uuid']);
         }
         return $out;
     }
@@ -190,6 +216,28 @@ class Db {
             $this->revert_trans();
             throw $e;
         }
+    }
+
+    public function share_item($uuid, $user) {
+        if($this->check_owner($uuid)) {
+            $stmt = $this->prepare('insert into `sharing` (`item`, `user`)
+                                        values (?, ?)');
+            $stmt->bind_param('ss', $uuid, $user);
+            self::execute($stmt);
+            return true;
+        }
+        return false;
+    }
+
+    public function unshare_item($uuid, $user) {
+        if($this->check_owner($uuid)) {
+            $stmt = $this->prepare('delete from `sharing`
+                                    where `item`=? and `user`=?');
+            $stmt->bind_param('ss', $uuid, $user);
+            self::execute($stmt);
+            return true;
+        }
+        return false;
     }
 
     public function save_file($uuid, $file) {

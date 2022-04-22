@@ -18,6 +18,18 @@
     </button>
   </form>
 </div>
+<svg class="hidden">
+  <defs>
+    <symbol id="delete-icon"
+         height="24px" width="24px"
+         fill="#404040"
+         viewBox="0 0 24 24">
+      <path d="M0 0h24v24H0z" fill="none"/>
+      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+    </symbol>
+  </defs>
+</svg>
+<datalist id="user_suggest"></datalist>
 
 ¤¤ completed ¤¤
 <div id="completed">
@@ -46,28 +58,93 @@
   </ul>
 </div>
 
+¤¤ sharing ¤¤
+<div class="sharing">
+  <p class="existing">
+    <span class="intro">Delad med: </span> ¤shared_users¤
+  </p>
+  <form class="add">
+    <label for="user">Lägg till person att dela med:</label>
+    <input type="text" name="user" placeholder="Skriv en användare..."
+           data-uuid="¤uuid¤" list="user_suggest" autocomplete="off"
+           oninput="JavaScript:share_input(event)" />
+    <button onClick="JavaScript:share(event)">
+      Dela
+    </button>
+  </form>
+</div>
+
+¤¤ sharing_pruned ¤¤
+<div class="sharing">
+  <p>
+    <span class="intro">Delad med: </span> ¤users¤
+  </p>
+</div>
+
+¤¤ sharing_pruned_user ¤¤
+<span class="pill">¤user¤</span>
+
+
+¤¤ shared ¤¤
+<div class="sharing">
+  <p>
+    <span class="intro">Delad av: </span> <span class="pill">¤owner¤</span>
+  </p>
+</div>
+
+¤¤ shared_user ¤¤
+<span class="pill">
+  <span class="label"
+        data-item="¤uuid¤"
+        data-user="¤user¤">
+    ¤name¤
+  </span>
+  <a class="delete"
+     onClick="JavaScript:unshare(event)">
+    <svg>
+      <use href="#delete-icon"></use>
+    </svg>
+  </a>
+</span>
+
 ¤¤ dl_item ¤¤
 <li>
-  <span class="label">¤name¤</span> (Uppladdad ¤uploaded¤, raderas om ¤ttl¤ dagar)
-  <br/>
-  <a href="¤link¤">Ladda ner</a>
+  <div class="name">
+    <span class="bold">¤name¤</span>
+  </div>
+  <div class="info">
+    Uppladdad ¤uploaded¤, raderas om ¤ttl¤ dagar
+  </div>
+  <div class="link">
+    <a href="¤link¤">Ladda ner</a>
+  </div>
+  ¤sharing¤
 </li>
 
 ¤¤ ul_item ¤¤
 <li>
-  <span class="label">¤name¤</span> (Skapad ¤created¤, giltig i ¤ttl¤ dagar till)
-  <br/>
-  <a href="¤link¤"
-     class="ul_link">
-    ¤link¤
-  </a>
+  <div class="name">
+    <span class="bold">¤name¤</span>
+  </div>
+  <div class="info">
+    Skapad ¤created¤, giltig i ¤ttl¤ dagar till
+  </div>
+  <div class="link">
+    <a href="¤link¤"
+       class="ul_link">
+      ¤link¤
+    </a>
+  </div>
+  ¤sharing¤
 </li>
 
 ¤¤ old_link_item ¤¤
 <li>
-  <span class="label">¤name¤</span>
-  <br/>
-  <span class="old_link">
+  <div class="name">
+    <span class="bold">¤name¤</span>
+  </div>
+  <div class="link">
     ¤link¤
-  </span>
+  </div>
+    ¤sharing¤
 </li>

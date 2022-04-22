@@ -3,9 +3,9 @@
 /*
    Takes an html file containing named fragments.
    Returns an associative array on the format array[name]=>fragment.
-   
+
    Fragments are delimited like this:
-   
+
    ¤¤ name 1 ¤¤
    fragment 1
    ¤¤ name 2 ¤¤
@@ -50,7 +50,7 @@ function try_adding($key, $value, $array, $filename) {
     } else if($key === '') {
         throw new Exception('There is an unnamed fragment in '.$filename);
     }
-    
+
     $array[$key] = trim($value);
 
     return $array;
@@ -104,19 +104,19 @@ function gen_uuid() {
                     // 32 bits for "time_low"
                     mt_rand( 0, 0xffff ),
                     mt_rand( 0, 0xffff ),
-                    
+
                     // 16 bits for "time_mid"
                     mt_rand( 0, 0xffff ),
-                    
+
                     // 16 bits for "time_hi_and_version",
                     // four most significant bits holds version number 4
                     mt_rand( 0, 0x0fff ) | 0x4000,
-                    
+
                     // 16 bits, 8 bits for "clk_seq_hi_res",
                     // 8 bits for "clk_seq_low",
                     // two most significant bits holds zero and one for variant DCE1.1
                     mt_rand( 0, 0x3fff ) | 0x8000,
-                    
+
                     // 48 bits for "node"
                     mt_rand( 0, 0xffff ),
                     mt_rand( 0, 0xffff ),
@@ -128,7 +128,7 @@ function notify($item) {
     $ldap = ldap_connect('ldaps://ldap.su.se');
     ldap_set_option($ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
     ldap_bind($ldap);
-    
+
     $uid = $item->get_owner();
     $response = ldap_search($ldap, 'dc=su,dc=se', "uid=$uid", ['mail']);
     $result = ldap_get_entries($ldap, $response);

@@ -3,7 +3,7 @@ class UploadPage {
     private $parts;
     private $uuid = '';
     private $item;
-    
+
     public function __construct() {
         global $db;
         $this->db = $db;
@@ -21,7 +21,7 @@ class UploadPage {
             $this->item = null;
         }
     }
-    
+
     public function render() {
         $message = '';
         $error = 'hidden';
