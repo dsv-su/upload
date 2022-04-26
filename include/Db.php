@@ -315,7 +315,8 @@ class Db {
     public function get_file($uuid) {
         $item = self::get_item($uuid);
         $user = get_user();
-        if($item->get_owner() != $user) {
+        $others = $item->get_sharing();
+        if($item->get_owner() != $user && ! in_array($user, $others, true)) {
             print("Du har inte tillgång till den här filen.");
             exit(1);
         }
