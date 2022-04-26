@@ -171,10 +171,10 @@ class Db {
         switch($state) {
             case Item::PEND:
             case Item::PRUN:
-                $sql .= ' order by `create_time`';
+                $sql .= ' order by `create_time` DESC';
                 break;
             case Item::COMP:
-                $sql .= ' order by `upload_time`';
+                $sql .= ' order by `upload_time` DESC';
                 break;
             default:
                 throw new Exception('Invalid item state in get_items: '.$state);
