@@ -113,8 +113,7 @@ class AdminPage {
                     $users .= replace(array('user' => $name),
                                       $this->parts['sharing_pruned_user']);
                 }
-                $sharing = replace(array('uuid' => $uuid,
-                                         'users' => $users),
+                $sharing = replace(array('users' => $users),
                                    $this->parts['sharing_pruned']);
             } else {
                 $owner = $this->ldap->get_name($item->get_owner());

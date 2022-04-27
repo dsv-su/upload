@@ -14,7 +14,7 @@ class Ajax {
         $status = 0;
         switch($_GET['action']) {
             case 'new':
-                $this->db->create_item($_GET['description']);
+                $this->db->create_item($_POST['description']);
                 header('Location: .', true, 303);
                 break;
             case 'dl':
