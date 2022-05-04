@@ -16,8 +16,13 @@ class Ldap {
 
     public function get_users($search) {
         $out = array();
-        $results = $this->search("(|(sn=$search*)(givenName=$search*))",
-                                 'cn', 'uid');
+        $words = preg_split('/\s+/', $search);
+        $query = '(&';
+        foreach($words as $word) {
+            $query .= "(|(sn=$word*)(givenName=$word*))";
+        }
+        $query .= ')';
+        $results = $this->search($query, 'cn', 'uid');
         foreach($results as $result) {
             if($result['uid'][0]) {
                 $out[] = array('user' => $result['uid'][0],

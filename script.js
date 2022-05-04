@@ -34,32 +34,50 @@ function share_change(event) {
 }
 
 function share_input(event) {
-    const input = event.currentTarget;
-    switch(event.inputType) {
-    case 'insertText':
-        const parent = event.currentTarget.parentNode.parentNode;
-        const pills = parent.querySelectorAll('.existing > .pill > .label');
-        const existing = [];
-        pills.forEach(function pushUser(pill) {
-            existing.push(pill.dataset['user']);
-        });
-        return suggest_user(input, existing);
-        break;
-    case 'insertReplacementText':
+    if(event instanceof InputEvent) {
+        const input = event.currentTarget;
+        switch(event.inputType) {
+        case 'insertText':
+            const parent = event.currentTarget.parentNode.parentNode;
+            const pills = parent.querySelectorAll(
+                '.existing > .pill > .label');
+            const existing = [];
+            pills.forEach(function pushUser(pill) {
+                existing.push(pill.dataset['user']);
+            });
+            return suggest_user(input, existing);
+            break;
+        case 'insertReplacementText':
+            event.preventDefault();
+            const options = input.list.options;
+            for(var i = 0; i < options.length; i++) {
+                var option = options[i];
+                if(option.value == event.data) {
+                    input.value = option.textContent;
+                    input.dataset['user'] = option.value;
+                    break;
+                }
+            }
+            // weird focusing bug requires a timeout...
+            window.setTimeout(function select() {
+                input.select();
+            }, 0);
+            break;
+        }
+    } else { // Chrome is an idiot as usual
         event.preventDefault();
+        const input = event.target;
+        const user = input.value;
         const options = input.list.options;
         for(var i = 0; i < options.length; i++) {
             var option = options[i];
-            if(option.value == event.data) {
+            if(option.value == user) {
                 input.value = option.textContent;
-                input.dataset['user'] = event.data;
+                input.dataset['user'] = option.value;
                 break;
             }
         }
-        // weird focusing bug requires a timeout...
-        window.setTimeout(function select() {
-            input.select();
-        }, 0);
+        input.select();
     }
 }
 
