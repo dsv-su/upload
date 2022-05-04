@@ -22,22 +22,12 @@ function make_element(html) {
     return template.content.firstChild;
 }
 
-function share_key(event) {
-    console.log('keypress', event)
-    if(event.key && event.key != "Enter") {
-    }
-    return share(event);
-}
-
-function share_change(event) {
-    console.log('change', event);
-}
-
 function share_input(event) {
     if(event instanceof InputEvent) {
         const input = event.currentTarget;
         switch(event.inputType) {
         case 'insertText':
+        case 'deleteContentBackward':
             const parent = event.currentTarget.parentNode.parentNode;
             const pills = parent.querySelectorAll(
                 '.existing > .pill > .label');
@@ -53,8 +43,7 @@ function share_input(event) {
             for(var i = 0; i < options.length; i++) {
                 var option = options[i];
                 if(option.value == event.data) {
-                    input.value = option.textContent;
-                    input.dataset['user'] = option.value;
+                    set_user(input, option);
                     break;
                 }
             }
@@ -72,8 +61,7 @@ function share_input(event) {
         for(var i = 0; i < options.length; i++) {
             var option = options[i];
             if(option.value == user) {
-                input.value = option.textContent;
-                input.dataset['user'] = option.value;
+                set_user(input, option);
                 break;
             }
         }
@@ -81,16 +69,23 @@ function share_input(event) {
     }
 }
 
+function set_user(input, user) {
+    input.value = user.textContent;
+    input.dataset['user'] = user.value;
+}
+
 function share(event) {
     event.preventDefault();
     const div = event.currentTarget.parentNode;
     const input = div.querySelector('input[type="text"]');
-    const suggestions = input.list;
-    if(suggestions.length < 1) {
-        return;
-    }
     const data = new FormData();
     data.append('item', input.dataset['uuid']);
+    if(!input.dataset['user']) {
+        const suggestions = input.list;
+        if(suggestions.childElementCount == 1) {
+            set_user(input, suggestions.firstElementChild);
+        }
+    }
     data.append('user', input.dataset['user']);
     ajaxRequest('share', data, function addPill(response) {
         if(response['ok'] === false) {
