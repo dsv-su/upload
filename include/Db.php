@@ -282,16 +282,11 @@ class Db {
         $finfo = new finfo(FILEINFO_MIME_TYPE);
         $tmp_name = $file['tmp_name'];
         $mime = $finfo->file($tmp_name);
-        $extension = '';
-        foreach(config\FORMATS as $ext => $mimetype) {
-            if($mimetype === $mime) {
-                $extension = $ext;
-                break;
-            }
-        }
-        if(!$extension) {
+        if(!array_key_exists($mime, config\FORMATS)) {
+            $exts = array_unique(array_values(config\FORMATS));
+            sort($exts);
             $result['message'] = 'Invalid file type. Permitted file types are:'
-                                .'<br/>'.implode(', ', array_keys(config\FORMATS));
+                                .'<br/>'.implode(', ', $exts);
             return $result;
         }
         if(!move_uploaded_file($tmp_name, $savepath)) {
@@ -331,17 +326,11 @@ class Db {
         }
         $finfo = new finfo(FILEINFO_MIME_TYPE);
         $mime = $finfo->file($filepath);
-        $extension = '';
-        foreach(config\FORMATS as $ext => $mimetype) {
-            if($mimetype === $mime) {
-                $extension = $ext;
-                break;
-            }
-        }
-        if(!$extension) {
+        if(!array_key_exists($mime, config\FORMATS)) {
             print('Filtypen känns inte igen: '.$mime);
             exit(1);
         }
+        $extension = config\FORMATS[$mime];
         $filename = $item->get_description().'.'.$extension;
         header('Content-Description: File Transfer');
         header('Content-Type: application/octet-stream');

@@ -16,14 +16,14 @@ const DB_HOST = 'localhost';
 const FILES_DIR = '/upload-files';
 
 # Array of file formats to be accepted
-#   extension => mime-type
+#   mime-type => extension
 # The mime type is what will be checked on upload.
 const FORMATS = array(
-    'jpg' => 'image/jpeg',
-    'gif' => 'image/gif',
-    'png' => 'image/png',
-    'pdf' => 'application/pdf',
-    'txt' => 'text/plain',
+    'image/jpeg'      => 'jpg',
+    'image/gif'       => 'gif',
+    'image/png'       => 'png',
+    'application/pdf' => 'pdf',
+    'text/plain'      => 'txt',
 );
 
 # Number of days until a newly created link becomes invalid
